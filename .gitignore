@@ -2,3 +2,4 @@ dist/
 samplepackage.egg-info/
 env/
 .venv/
+.mypy_cache/
