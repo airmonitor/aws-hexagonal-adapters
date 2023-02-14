@@ -64,10 +64,10 @@ class S3Service:
                     token = response["NextContinuationToken"]
                 else:
                     break
-            LOGGER.info("Found %s search results with prefix %s", len(files), prefix)
+            LOGGER.info(f"Found {len(files)} search results with prefix {prefix}")
             return files
         except ClientError:
-            LOGGER.error("Failed to list files in bucket %s with prefix %s", bucket, prefix)
+            LOGGER.error(f"Failed to list files in bucket {bucket} with prefix {prefix}")
             raise
 
     def list_prefixes(self, bucket, delimiter, path_prefix="", page_size=1000):
@@ -101,25 +101,21 @@ class S3Service:
                     token = response["NextContinuationToken"]
                 else:
                     break
-            LOGGER.info("Found %s prefixes with delimiter %s", len(prefixes), delimiter)
+            LOGGER.info(f"Found {len(prefixes)} prefixes with delimiter {delimiter}")
             return prefixes
         except ClientError:
-            LOGGER.error(
-                "Failed to list prefixes in bucket %s with delimiter %s",
-                bucket,
-                delimiter,
-            )
+            LOGGER.error(f"Failed to list prefixes in bucket {bucket} with delimiter {delimiter}")
             raise
 
     def delete_object(self, bucket, key):
         """Delete file from S3 bucket."""
         try:
             self.__s3.delete_object(Bucket=bucket, Key=key)
-            LOGGER.info("Deleted file s3://%s/%s", bucket, key)
+            LOGGER.info(f"Deleted file s3://{bucket}/{key}")
         except ClientError as client_error:
             if client_error.response["Error"]["Code"] == "404":
                 LOGGER.exception(f"Object not found: {bucket}, {key}")
-            LOGGER.error("Failed to delete file s3://%s/%s", bucket, key)
+            LOGGER.error(f"Failed to delete file s3://{bucket}/{key}")
             raise
 
     def delete_objects(self, bucket, keys):
@@ -128,17 +124,17 @@ class S3Service:
             for idx in range(0, len(keys), 1000):
                 objects = [{"Key": key} for key in keys[idx : idx + 1000]]
                 self.__s3.delete_objects(Bucket=bucket, Delete={"Objects": objects})
-            LOGGER.info("Deleted %s objects from bucket %s", len(keys), bucket)
+            LOGGER.info(f"Deleted {len(keys)} objects from bucket {bucket}")
         except ClientError:
-            LOGGER.error("Failed to delete objects from bucket %s", bucket)
+            LOGGER.error(f"Failed to delete objects from bucket {bucket}")
             raise
 
     def delete_prefix(self, bucket, prefix):
         """Delete all files from S3 bucket that have the same prefix."""
-        LOGGER.info("Deleting prefix %s from bucket %s", prefix, bucket)
+        LOGGER.info(f"Deleting prefix {prefix} from bucket {bucket}")
         keys = self.list_files(bucket, prefix)
         self.delete_objects(bucket, keys)
-        LOGGER.info("Deleted prefix %s from bucket %s", prefix, bucket)
+        LOGGER.info(f"Deleted prefix {prefix} from bucket {bucket}")
 
     def copy(self, source_bucket, source_key, target_bucket, target_key):
         # sourcery skip: raise-specific-error
@@ -149,11 +145,7 @@ class S3Service:
         except ClientError as error:
             if error.response["Error"]["Code"] == "404":
                 LOGGER.error(
-                    "Failed to copy objects s3://%s/%s -> s3://%s/%s",
-                    source_bucket,
-                    source_key,
-                    target_bucket,
-                    target_key,
+                    f"Failed to copy objects s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}"
                 )
 
         except Exception as error:
@@ -165,20 +157,10 @@ class S3Service:
         try:
             self.copy(source_bucket, source_key, target_bucket, target_key)
             self.delete_object(source_bucket, source_key)
-            LOGGER.info(
-                "Object moved s3://%s/%s -> s3://%s/%s",
-                source_bucket,
-                source_key,
-                target_bucket,
-                target_key,
-            )
+            LOGGER.info(f"Object moved s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}")
         except ClientError:
             LOGGER.error(
-                "Failed to move object s3://%s/%s -> s3://%s/%s",
-                source_bucket,
-                source_key,
-                target_bucket,
-                target_key,
+                f"Failed to move object s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}"
             )
             raise
 
@@ -186,11 +168,7 @@ class S3Service:
         """Move files from S3 bucket to another S3 location."""
         try:
             LOGGER.info(
-                "Starting moving objects s3://%s/%s -> s3://%s/%s",
-                source_bucket,
-                source_prefix,
-                target_bucket,
-                target_prefix,
+                f"Starting moving objects s3://{source_bucket}/{source_prefix} -> s3://{target_bucket}/{target_prefix}",
             )
             token = None
             while True:
@@ -214,18 +192,10 @@ class S3Service:
                 else:
                     break
             LOGGER.info(
-                "Finished moving objects s3://%s/%s -> s3://%s/%s",
-                source_bucket,
-                source_prefix,
-                target_bucket,
-                target_prefix,
+                f"Finished moving objects s3://{source_bucket}/{source_prefix} -> s3://{target_bucket}/{target_prefix}",
             )
         except ClientError:
             LOGGER.error(
-                "Failed to move objects s3://%s/%s -> s3://%s/%s",
-                source_bucket,
-                source_prefix,
-                target_bucket,
-                target_prefix,
+                "Failed to move objects s3://{source_bucket}/{source_prefix} -> s3://{target_bucket}/{target_prefix}"
             )
             raise
