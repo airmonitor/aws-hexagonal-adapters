@@ -13,15 +13,15 @@ LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]), level=os.e
 class DynamoDBService:
     """Interact with DynamoDB using the AWS boto3 library."""
 
-    def __init__(self, region="eu-west-1"):
+    def __init__(self, region_name="eu-west-1"):
         """Initialize region in which operations will be performed.
 
-        :param region: default eu-west-1
+        :param region_name: default eu-west-1
         """
         self.__client = boto3.resource(
             "dynamodb",
-            region_name=region,
-            endpoint_url=f"https://dynamodb.{region}.amazonaws.com/",
+            region_name=region_name,
+            endpoint_url=f"https://dynamodb.{region_name}.amazonaws.com/",
         )
 
     def put_item(self, table_name, item):
