@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "aws_hexagonal_adapters"
 description = "Adapters following hexagonal architecture to connect various AWS services."
-version = "0.0.5"
+version = "0.0.7"
 authors = [{name = "Tomasz Szuster", email = "tomasz.szuster@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.9"
