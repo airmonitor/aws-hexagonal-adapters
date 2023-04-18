@@ -140,15 +140,15 @@ class SQSService:
             LOGGER.error(f"Failed to receive messages from queue {queue_url}")
             raise
 
-    def delete_message(self, queue_url, message):
+    def delete_message(self, queue_url, receipt_handle):
         """Delete a message from queue.
 
         :param queue_url: the AWS SQS queue URL
-        :param message: SQS message to be deleted including the ReceiptHandle
+        :param receipt_handle: receipt_handle from sqs message
         :return: NotImplemented
         """
         try:
-            self.__sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"])
+            self.__sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             LOGGER.debug("Removed message from queue")
         except ClientError:
             LOGGER.error(f"Failed to delete message from queue {queue_url}")
