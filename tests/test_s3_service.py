@@ -14,7 +14,7 @@ constants = {
     "download_local_path": "test_download.txt",
     "remote_path": "folder/test.txt",
     "extra_args": {"StorageClass": "STANDARD_IA"},
-    "content": "test content",
+    "content": "test content\n",
 }
 
 
