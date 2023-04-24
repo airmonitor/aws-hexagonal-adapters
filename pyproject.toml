@@ -8,13 +8,13 @@ description = "Adapters following hexagonal architecture to connect various AWS 
 version = "0.0.7"
 authors = [{name = "Tomasz Szuster", email = "tomasz.szuster@gmail.com"}]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = [
         "boto3>=1.26.71,<2.0.0",
         "botocore>=1.29.71,<2.0.0",
-        "aws_lambda_powertools>=2.8.0,<3.0.0",
+        "aws_lambda_powertools>=2.8.0,<4.0.0",
 ]
 [project.urls]
 Home = "https://github.com/airmonitor/aws-hexagonal-adapters"
