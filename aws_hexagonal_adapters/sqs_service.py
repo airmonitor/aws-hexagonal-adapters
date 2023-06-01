@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Simplify operations against AWS Simple Queue Service - SQS using AWS Python SDK boto3."""
 import os
 import json
 import boto3
@@ -45,7 +44,7 @@ class SQSService:
             raise
 
     def send_message(self, message, queue_url):
-        """Send a message to a regular queue.
+        """Send a message to regular queue.
 
         :param message: message payload - string
         :param queue_url: the AWS SQS queue URL
@@ -64,7 +63,7 @@ class SQSService:
             raise
 
     @staticmethod
-    def __retry_failed_messages(queue_url, response, messages, retry, retry_function):
+    def _retry_failed_messages(queue_url, response, messages, retry, retry_function):
         """Retry failed messages.
 
         :param queue_url:
@@ -99,7 +98,7 @@ class SQSService:
             for idx in range(0, len(messages), chunk_size):
                 chunk = messages[idx : idx + chunk_size]
                 response = self.sqs.send_message_batch(QueueUrl=queue_url, Entries=chunk)
-                self.__retry_failed_messages(queue_url, response, chunk, retry, self.__sqs.send_message_batch)
+                self._retry_failed_messages(queue_url, response, chunk, retry, self.sqs.send_message_batch)
             LOGGER.info(f"Sent {len(messages)} message to queue {queue_url}")
         except ClientError:
             LOGGER.error(f"Failed to send message batch to queue {queue_url}")
@@ -154,7 +153,7 @@ class SQSService:
     def delete_messages(self, queue_url, messages, retry=3):
         """Delete multiple messages (10) from the SQS queue.
 
-        :param queue_url: the AWS SQS queue URL
+        :param queue_url: The AWS SQS queue URL
         :param messages: list of SQS messages
         :param retry: number of times to retry
         :return: NotImplemented
@@ -165,7 +164,7 @@ class SQSService:
                 chunk = messages[i : i + chunk_size]
                 entries = [{"Id": x["MessageId"], "ReceiptHandle": x["ReceiptHandle"]} for x in chunk]
                 response = self.sqs.delete_message_batch(QueueUrl=queue_url, Entries=entries)
-                self.__retry_failed_messages(queue_url, response, chunk, retry, self.__sqs.delete_message_batch)
+                self._retry_failed_messages(queue_url, response, chunk, retry, self.sqs.delete_message_batch)
             LOGGER.info(f"Deleted {len(messages)} message from queue {queue_url}")
         except ClientError:
             LOGGER.error(f"Failed to delete messages from queue {queue_url}")
@@ -189,7 +188,7 @@ class SQSService:
     def queue_has_messages(self, queue_name: str) -> int:
         """Check if a queue has messages.
 
-        :param queue_name: the AWS SQS queue name
+        :param queue_name: The AWS SQS queue name
         :return: number of messages
         """
         attr = self.get_queue_attr(queue_name, ["ApproximateNumberOfMessages"])
@@ -198,7 +197,7 @@ class SQSService:
     def queue_has_messages_in_flight(self, queue_name: str) -> int:
         """Check if a queue has messages in flight (actually processing).
 
-        :param queue_name: the AWS SQS queue name
+        :param queue_name: The AWS SQS queue name
         :return: number of messages
         """
         attr = self.get_queue_attr(queue_name, ["ApproximateNumberOfMessagesNotVisible"])
