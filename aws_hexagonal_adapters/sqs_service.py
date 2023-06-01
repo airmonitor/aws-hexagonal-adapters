@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Simplify operations against AWS Simple Queue Service - SQS using AWS Python SDK boto3."""
 import os
 import json
 import boto3
@@ -16,25 +15,22 @@ class BatchProcessingFailedException(Exception):
 class SQSService:
     """Simplify queue operations via AWS Simple Queue Service."""
 
-    def __init__(
-        self,
-        region_name="eu-west-2",
-    ):
+    def __init__(self, region_name="eu-west-2"):
         """Initialize default region.
 
         :param region_name: the AWS region name, default eu-central-1
         """
-        self.__sqs = boto3.client("sqs", region_name=region_name)
+        self.sqs = boto3.client("sqs", region_name=region_name)
 
     def send_message_to_fifo(self, message, queue_url):
-        """Send message to the FIFO SQS queue.
+        """Send a message to the FIFO SQS queue.
 
-        :param message: message payload - string
+        :param message: Message payload - string
         :param queue_url: the AWS SQS queue URL
         :return: NotImplemented
         """
         try:
-            self.__sqs.send_message(
+            self.sqs.send_message(
                 QueueUrl=queue_url,
                 MessageBody=message["MessageBody"],
                 DelaySeconds=message["DelaySeconds"],
@@ -55,7 +51,7 @@ class SQSService:
         :return: NotImplemented
         """
         try:
-            self.__sqs.send_message(
+            self.sqs.send_message(
                 QueueUrl=queue_url,
                 MessageBody=message["MessageBody"],
                 DelaySeconds=message.get("DelaySeconds", 0),
@@ -67,7 +63,7 @@ class SQSService:
             raise
 
     @staticmethod
-    def __retry_failed_messages(queue_url, response, messages, retry, retry_function):
+    def _retry_failed_messages(queue_url, response, messages, retry, retry_function):
         """Retry failed messages.
 
         :param queue_url:
@@ -92,7 +88,7 @@ class SQSService:
     def send_messages(self, messages, queue_url, retry=3):
         """Send 10 messages in batch to the SQS queue.
 
-        :param messages: list of messages
+        :param messages: List of messages
         :param queue_url: the AWS SQS queue URL
         :param retry: number of times to retry
         :return: NotImplemented
@@ -101,17 +97,17 @@ class SQSService:
             chunk_size = 10
             for idx in range(0, len(messages), chunk_size):
                 chunk = messages[idx : idx + chunk_size]
-                response = self.__sqs.send_message_batch(QueueUrl=queue_url, Entries=chunk)
-                self.__retry_failed_messages(queue_url, response, chunk, retry, self.__sqs.send_message_batch)
+                response = self.sqs.send_message_batch(QueueUrl=queue_url, Entries=chunk)
+                self._retry_failed_messages(queue_url, response, chunk, retry, self.sqs.send_message_batch)
             LOGGER.info(f"Sent {len(messages)} message to queue {queue_url}")
         except ClientError:
             LOGGER.error(f"Failed to send message batch to queue {queue_url}")
             raise
 
     def receive_messages(self, queue_url, **kwargs):
-        """Receive defined number of messages from queue.
+        """Receive a defined number of messages from queue.
 
-        :param queue_url: the AWS SQS queue URL
+        :param queue_url: The AWS SQS queue URL
         :param kwargs: dictionary of key/value pairs to pass to SQS client
         :return: messages list
         """
@@ -121,7 +117,7 @@ class SQSService:
 
             while num_of_messages > 0:
                 max_messages = min(num_of_messages, 10)
-                response = self.__sqs.receive_message(
+                response = self.sqs.receive_message(
                     QueueUrl=queue_url,
                     AttributeNames=[kwargs.get("attribute_names", "All")],
                     MaxNumberOfMessages=kwargs.get("max_messages", max_messages),
@@ -129,7 +125,7 @@ class SQSService:
                     WaitTimeSeconds=kwargs.get("wait_time", 3),
                 )
                 new_messages = response.get("Messages", [])
-                if len(new_messages) == 0:
+                if not new_messages:
                     LOGGER.info("No messages in queue")
                     return "No messages in queue"
                 messages.extend(new_messages)
@@ -148,7 +144,7 @@ class SQSService:
         :return: NotImplemented
         """
         try:
-            self.__sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+            self.sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
             LOGGER.debug("Removed message from queue")
         except ClientError:
             LOGGER.error(f"Failed to delete message from queue {queue_url}")
@@ -157,7 +153,7 @@ class SQSService:
     def delete_messages(self, queue_url, messages, retry=3):
         """Delete multiple messages (10) from the SQS queue.
 
-        :param queue_url: the AWS SQS queue URL
+        :param queue_url: The AWS SQS queue URL
         :param messages: list of SQS messages
         :param retry: number of times to retry
         :return: NotImplemented
@@ -167,8 +163,8 @@ class SQSService:
             for i in range(0, len(messages), chunk_size):
                 chunk = messages[i : i + chunk_size]
                 entries = [{"Id": x["MessageId"], "ReceiptHandle": x["ReceiptHandle"]} for x in chunk]
-                response = self.__sqs.delete_message_batch(QueueUrl=queue_url, Entries=entries)
-                self.__retry_failed_messages(queue_url, response, chunk, retry, self.__sqs.delete_message_batch)
+                response = self.sqs.delete_message_batch(QueueUrl=queue_url, Entries=entries)
+                self._retry_failed_messages(queue_url, response, chunk, retry, self.sqs.delete_message_batch)
             LOGGER.info(f"Deleted {len(messages)} message from queue {queue_url}")
         except ClientError:
             LOGGER.error(f"Failed to delete messages from queue {queue_url}")
@@ -182,7 +178,7 @@ class SQSService:
         :return: attributes dict
         """
         try:
-            response = self.__sqs.get_queue_attributes(QueueUrl=queue_url, AttributeNames=attribute_names)
+            response = self.sqs.get_queue_attributes(QueueUrl=queue_url, AttributeNames=attribute_names)
             LOGGER.info(f"Got {attribute_names} attributes for queue {queue_url}")
             return response["Attributes"]
         except ClientError:
@@ -192,7 +188,7 @@ class SQSService:
     def queue_has_messages(self, queue_name: str) -> int:
         """Check if a queue has messages.
 
-        :param queue_name: the AWS SQS queue name
+        :param queue_name: The AWS SQS queue name
         :return: number of messages
         """
         attr = self.get_queue_attr(queue_name, ["ApproximateNumberOfMessages"])
@@ -201,7 +197,7 @@ class SQSService:
     def queue_has_messages_in_flight(self, queue_name: str) -> int:
         """Check if a queue has messages in flight (actually processing).
 
-        :param queue_name: the AWS SQS queue name
+        :param queue_name: The AWS SQS queue name
         :return: number of messages
         """
         attr = self.get_queue_attr(queue_name, ["ApproximateNumberOfMessagesNotVisible"])
