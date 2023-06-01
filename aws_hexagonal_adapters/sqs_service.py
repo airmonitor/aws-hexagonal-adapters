@@ -109,9 +109,9 @@ class SQSService:
             raise
 
     def receive_messages(self, queue_url, **kwargs):
-        """Receive defined number of messages from queue.
+        """Receive a defined number of messages from queue.
 
-        :param queue_url: the AWS SQS queue URL
+        :param queue_url: The AWS SQS queue URL
         :param kwargs: dictionary of key/value pairs to pass to SQS client
         :return: messages list
         """
@@ -129,7 +129,7 @@ class SQSService:
                     WaitTimeSeconds=kwargs.get("wait_time", 3),
                 )
                 new_messages = response.get("Messages", [])
-                if len(new_messages) == 0:
+                if not new_messages:
                     LOGGER.info("No messages in queue")
                     return "No messages in queue"
                 messages.extend(new_messages)
