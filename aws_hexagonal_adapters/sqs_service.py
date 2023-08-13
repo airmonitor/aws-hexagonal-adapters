@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Library to simplify working with SQS."""
 import os
 import json
 import boto3
