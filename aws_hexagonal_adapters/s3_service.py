@@ -24,7 +24,7 @@ class S3Service:
         )
 
     def upload(self, *, bucket: str, local_path: str, remote_path: str, extra_args=None) -> None:
-        """Upload files from local path to target path on S3 bucket.
+        """Upload files from a local path to target path on S3 bucket.
 
         :param bucket: S3 bucket name
         :param local_path: local file path
@@ -42,7 +42,7 @@ class S3Service:
             raise
 
     def download(self, *, bucket: str, local_path: str, remote_path: str) -> None:
-        """Download files from path in S3 bucket to local path.
+        """Download files from a path in S3 bucket to a local path.
 
         :param bucket: S3 bucket name
         :param local_path: local file path
@@ -57,7 +57,7 @@ class S3Service:
             raise
 
     def list_files(self, *, bucket: str, prefix: str, page_size=1000) -> List[Optional[Any]]:
-        """List files using prefix path in S3 bucket.
+        """List files using a prefix path in S3 bucket.
 
         :param bucket: S3 bucket name
         :param prefix: prefix path
@@ -192,7 +192,7 @@ class S3Service:
             raise Exception(f"Unexpected error in download_object function of s3 helper: {error}") from error
 
     def move_object(self, *, source_bucket: str, source_key: str, target_bucket: str, target_key: str):
-        """Move file from S3 bucket to another S3 location.
+        """Move the file from S3 bucket to another S3 location.
 
         :param source_bucket: S3 bucket name
         :param source_key: file key
