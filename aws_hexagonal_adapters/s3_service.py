@@ -3,7 +3,7 @@
 import os
 from typing import Any, Optional, List
 
-import boto3
+from boto3 import client
 from aws_lambda_powertools import Logger
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -19,7 +19,7 @@ class S3Service:
 
         :param region_name: default eu-west-1
         """
-        self.__s3 = boto3.client(
+        self.__s3 = client(
             "s3", region_name=region_name, config=Config(retries={"max_attempts": 10, "mode": "adaptive"})
         )
 
