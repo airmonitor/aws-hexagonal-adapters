@@ -2,7 +2,7 @@
 """Library to simplify working with SQS."""
 import os
 import json
-import boto3
+from boto3 import client
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Logger
 
@@ -21,7 +21,7 @@ class SQSService:
 
         :param region_name: the AWS region name, default eu-central-1
         """
-        self.sqs = boto3.client("sqs", region_name=region_name)
+        self.sqs = client("sqs", region_name=region_name)
 
     def send_message_to_fifo(self, message, queue_url):
         """Send a message to the FIFO SQS queue.
@@ -109,7 +109,8 @@ class SQSService:
         """Receive a defined number of messages from queue.
 
         :param queue_url: The AWS SQS queue URL
-        :param kwargs: dictionary of key/value pairs to pass to SQS client
+        :param kwargs: dictionary of key/value pairs to pass to SQS
+            client
         :return: messages list
         """
         try:

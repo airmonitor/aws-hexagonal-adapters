@@ -2,12 +2,11 @@
 """Simplify operations against AWS Simple Email Service using AWS Python SDK
 boto3."""
 import os
-import boto3
-from botocore.exceptions import ClientError
 from typing import Optional
 
-# noinspection PyPackageRequirements
 from aws_lambda_powertools import Logger
+from boto3 import client
+from botocore.exceptions import ClientError
 
 LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]), level=os.environ["LOG_LEVEL"])
 
@@ -18,9 +17,9 @@ class SESService:
     def __init__(self, region_name="eu-west-1"):
         """Initialize default parameters for AWS Simple Email Service.
 
-        :param region_name: the AWS region name, default eu-west-1
+        :param region_name: The AWS region name, default eu-west-1
         """
-        self.__ses = boto3.client("ses", region_name=region_name)
+        self.__ses = client("ses", region_name=region_name)
 
     def send_email(
         self, email_body_text: str, email_body_html: str, destination: str, sender: str, subject: str
@@ -70,7 +69,7 @@ class SESService:
         attachment_list: Optional[list] = None,
         picture_list: Optional[list] = None,
     ) -> bool:
-        """Send email message with attachment.
+        """Send an email message with attachment.
 
         :param destinations: destination list email address - recipients
         :param sender: sender email address

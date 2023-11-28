@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Abstraction layer on top of AWS Event Bridge."""
 import os
-import boto3
+from boto3 import client, resource
 from botocore.config import Config
 from boto3.dynamodb.transform import TransformationInjector
 from boto3.dynamodb.types import TypeDeserializer
@@ -20,20 +20,20 @@ class DynamoDBService:
         :param region_name: Default eu-west-1
         """
         config = Config(retries=dict(max_attempts=10))
-        self.__resource = boto3.resource(
+        self.__resource = resource(
             "dynamodb",
             region_name=region_name,
             config=config,
             endpoint_url=f"https://dynamodb.{region_name}.amazonaws.com/",
         )
-        self.__client = boto3.client("dynamodb", region_name=region_name, config=config)
+        self.__client = client("dynamodb", region_name=region_name, config=config)
 
         self.__transformation = TransformationInjector(deserializer=TypeDeserializer())
 
-    def scan_items(self, table_name: str, index_name: str = None):
+    def scan_items(self, table_name: str, index_name: str | None = None):
         """Get all items form table using client boto3 module.
 
-        :param table_name: The name of a DynamoDB table
+        :param table_name: The name of a DynamoDB table is
         :param index_name: The name of a DynamoDB index
         :return:
         """
@@ -125,12 +125,14 @@ class DynamoDBService:
             raise
 
     def update_item(self, table_name, key, expression=None, values="", condition=""):
-        """Update existing item or add new one if don't exist.
+        """Update existing item or add new one if it doesn't exist.
 
         :param condition:
-        :param table_name: name of the table
-        :param key: hash key which will be updated or added if not exists
-        :param expression: dynamodb expression used to update item in the table
+        :param table_name: Name of the table
+        :param key: hash key which will be updated or added if not
+            exists
+        :param expression: dynamodb expression used to update item in
+            the table
         :param values: expression attribute values
         :return: NotImplemented
         """
@@ -150,7 +152,8 @@ class DynamoDBService:
         """Get multiple items from table.
 
         :param table_name: Name of the table
-        :param filter_expression: dynamodb expression used to narrow returned results
+        :param filter_expression: dynamodb expression used to narrow
+            returned results
         :return: dict with items
         """
         table = self.__resource.Table(table_name)
@@ -177,9 +180,11 @@ class DynamoDBService:
         """Get all elements from table limited to default 500 items per page.
 
         :param table_name: The Name of the table
-        :param filter_expression: dynamodb expression used to get items in the table
+        :param filter_expression: dynamodb expression used to get items
+            in the table
         :param last_evaluated_key: the last key to start pagination from
-        :param limit: default 500 items will be returned in one pagination page
+        :param limit: default 500 items will be returned in one
+            pagination page
         :return: list of dictionaries
         """
         table = self.__resource.Table(table_name)
@@ -202,7 +207,7 @@ class DynamoDBService:
         """Query DynamoDB table using key/value pairs.
 
         :param table_name: Name of the table
-        :param kwargs: Dictionary of key/value pairs
+        :param kwargs: Dictionary
         :return: A list of dictionaries
         """
         table = self.__resource.Table(table_name)

@@ -2,10 +2,8 @@
 """Wrapper around default AWS SDK for using Systems Manager Parameter Store."""
 import os
 from typing import Union
-import boto3
+from boto3 import client
 from botocore.exceptions import ClientError
-
-# noinspection PyPackageRequirements
 from aws_lambda_powertools import Logger
 
 LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]), level=os.environ["LOG_LEVEL"])
@@ -18,16 +16,19 @@ class SSMService:
     def __init__(self, region_name: str = "eu-west-1"):
         """Class init.
 
-        :param region_name: The AWS region name which contain SSM Parameter store keys.
+        :param region_name: The AWS region name which contains SSM
+            Parameter store keys.
         """
-        self.__ssm = boto3.client("ssm", region_name=region_name)
+        self.__ssm = client("ssm", region_name=region_name)
 
     def get_parameter(self, parameter: str, with_decryption: bool = True) -> Union[str, None]:
-        """Get single value from the AWS SSM parameter store key.
+        """Get a single value from the AWS SSM parameter store key.
 
         :param parameter: The name of AWS SSM parameter store key
-        :param with_decryption: Default true to encrypt parameter store key via the AWS KMS key
-        :return: the parameter store key value or None if key can't be gathered
+        :param with_decryption: Default true to an encrypted parameter
+            store key via the AWS KMS key
+        :return: the parameter store key value or None if key can't be
+            gathered
         """
         try:
             response = self.__ssm.get_parameter(Name=parameter, WithDecryption=with_decryption)
@@ -42,19 +43,21 @@ class SSMService:
     def get_parameters(self, parameters: list, with_decryption: bool = True) -> list:
         """Get multiple SSM parameter store keys.
 
-        :param parameters: list of SSM parameter store keys
+        :param parameters: List of SSM parameter store keys
         :param with_decryption:
-        :return: list of the AWS SSM parameter store keys value
+        :return: List of the AWS SSM parameter store keys value
         """
         return [self.get_parameter(x, with_decryption) for x in parameters]
 
     def get_parameters_dict(self, parameters, with_decryption: bool = True) -> dict:
-        """Create dictionary with key as the ssm parameter store name and value
-        as it's key.
+        """Create dictionary with a key as the ssm parameter store name and
+        value as it's key.
 
         :param parameters:
-        :param with_decryption: default true to encrypt ssm parameters via kms key
-        :return: Return dictionary of multiple ssm parameter store entries
+        :param with_decryption: Default true to encrypted ssm parameters
+            via kms key
+        :return: Return dictionary of multiple ssm parameter store
+            entries
         """
         try:
             LOGGER.info(f"Getting params {parameters} from ssm")
@@ -97,11 +100,12 @@ class SSMService:
     ):
         """Create encrypted parameter in SSM.
 
-        :param parameter_name: parameter path
+        :param parameter_name: Parameter path
         :param description:
         :param key_id:
         :param value:
-        :param parameter_type: String or SecureString, default SecureString
+        :param parameter_type: String or SecureString, default
+            SecureString
         :return:
         """
         try:

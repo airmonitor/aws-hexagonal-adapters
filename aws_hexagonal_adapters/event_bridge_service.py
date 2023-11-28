@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Abstraction layer on top of AWS Event Bridge."""
 import os
-import boto3
+from boto3 import client
 
 # noinspection PyPackageRequirements
 from aws_lambda_powertools import Logger
@@ -18,13 +18,13 @@ class EventsService:
 
         :param event_bus_name: The AWS Event Bus name.
         """
-        self.__client = boto3.client("events", region_name=region_name)
+        self.__client = client("events", region_name=region_name)
         self.event_bus_name = event_bus_name
 
     def put_event(self, item: dict):
         """Put json event to the Event Bridge Bus.
 
-        :param item: json data
+        :param item: Json data
         :return:
         """
         try:
