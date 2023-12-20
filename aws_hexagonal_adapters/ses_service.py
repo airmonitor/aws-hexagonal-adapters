@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 """Simplify operations against AWS Simple Email Service using AWS Python SDK
 boto3."""
 import os
+
 from typing import Optional
 
 from aws_lambda_powertools import Logger
@@ -22,7 +22,12 @@ class SESService:
         self.__ses = client("ses", region_name=region_name)
 
     def send_email(
-        self, email_body_text: str, email_body_html: str, destination: str, sender: str, subject: str
+        self,
+        email_body_text: str,
+        email_body_html: str,
+        destination: str,
+        sender: str,
+        subject: str,
     ) -> bool:
         """Send email without attachment.
 
@@ -66,8 +71,8 @@ class SESService:
         destinations: list,
         sender: str,
         subject: str,
-        attachment_list: Optional[list] = None,
-        picture_list: Optional[list] = None,
+        attachment_list: list | None = None,
+        picture_list: list | None = None,
     ) -> bool:
         """Send an email message with attachment.
 
@@ -79,10 +84,10 @@ class SESService:
         :param attachment_list: list of strings pointing to files in local file system
         :return: False/True
         """
-        from email.mime.text import MIMEText
         from email.mime.application import MIMEApplication
         from email.mime.image import MIMEImage
         from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
 
         message = MIMEMultipart()
         message["Subject"] = subject

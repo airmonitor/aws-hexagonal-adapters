@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
 """Wrapper around default AWS SDK for using Systems Manager Parameter Store."""
 import os
-from mypy_boto3_ssm.client import SSMClient
-from typing import Union, Literal
+
+from typing import Literal
+from botocore.config import Config
+from aws_lambda_powertools import Logger
 from boto3 import client
 from botocore.exceptions import ClientError
-from aws_lambda_powertools import Logger
+from mypy_boto3_ssm.client import SSMClient
 
 LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]), level=os.environ["LOG_LEVEL"])
 
@@ -20,17 +21,18 @@ class SSMService:
         :param region_name: The AWS region name which contains SSM
             Parameter store keys.
         """
-        self.__ssm = self.create_client(region_name=region_name)
+        config = Config(retries={"max_attempts": 10, "mode": "adaptive"})
+        self.__ssm = self.create_client(region_name=region_name, config=config)
 
     @staticmethod
-    def create_client(region_name: str) -> SSMClient:
+    def create_client(region_name: str, config:Config) -> SSMClient:
         """Create a new SSM client.
 
         :return: A new SSM client
         """
-        return client("ssm", region_name=region_name)
+        return client("ssm", region_name=region_name, config=config)
 
-    def get_parameter(self, parameter: str, with_decryption: bool = True) -> Union[str, None]:
+    def get_parameter(self, parameter: str, with_decryption: bool = True) -> str | None:
         """Deletes a parameter from AWS SSM Parameter Store.
 
         Parameters:
@@ -101,7 +103,7 @@ class SSMService:
                 params = parameters[:10]
                 del parameters[:10]
                 ssm_parameters.extend(
-                    self.__ssm.get_parameters(Names=params, WithDecryption=with_decryption)["Parameters"]
+                    self.__ssm.get_parameters(Names=params, WithDecryption=with_decryption)["Parameters"],
                 )
 
             return {param["Name"]: param["Value"] for param in ssm_parameters}

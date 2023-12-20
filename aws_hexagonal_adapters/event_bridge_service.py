@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 """Abstraction layer on top of AWS Event Bridge."""
 import os
-from boto3 import client
 
 # noinspection PyPackageRequirements
 from aws_lambda_powertools import Logger
+from boto3 import client
 from botocore.exceptions import ClientError
 
 LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]), level=os.environ["LOG_LEVEL"])

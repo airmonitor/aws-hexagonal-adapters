@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
 """Library to simplify working with S3."""
 import os
-from typing import Any, Optional, List
-from mypy_boto3_s3.client import S3Client
-from boto3 import client
+
+from typing import Any
+
 from aws_lambda_powertools import Logger
+from boto3 import client
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from mypy_boto3_s3.client import S3Client
 
 LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]), level=os.environ["LOG_LEVEL"])
 
@@ -24,24 +25,27 @@ class S3Service:
         Creates a new S3Client instance using the provided region name and
         assigns it to __s3 property.
         """
-
-        self.__s3 = self.create_client(region_name=region_name)
+        config = Config(retries={"max_attempts": 10, "mode": "adaptive"})
+        self.__s3 = self.create_client(region_name=region_name, config=config)
 
     @staticmethod
-    def create_client(region_name: str) -> S3Client:
-        """Creates an S3 client.
+    def create_client(region_name: str, config: Config) -> S3Client:
+        """
+        Creates an S3 client.
 
         Parameters:
-        - region_name (str): The AWS region name for the S3 client.
+        - region_name (str): The AWS region name for the client.
+        - config (botocore.config.Config): The botocore configuration for the client.
 
         Returns:
-        - S3Client: A Boto3 S3 client for the given region.
+        - S3Client: The S3 client instance.
 
-        The client is configured with retry settings to retry up to 10 times
-        using an adaptive retry mode.
+        Use the boto3 client() function to create a new S3Client instance
+        configured for the given region and with the provided botocore
+        configuration.
         """
 
-        return client("s3", region_name=region_name, config=Config(retries={"max_attempts": 10, "mode": "adaptive"}))
+        return client("s3", region_name=region_name, config=config)
 
     def upload(self, *, bucket: str, local_path: str, remote_path: str, extra_args=None) -> None:
         """Uploads a file to an S3 bucket.
@@ -70,7 +74,7 @@ class S3Service:
             raise
 
     def download(self, *, bucket: str, local_path: str, remote_path: str) -> None:
-        """Downloads a file from an S3 bucket.
+        """downloads a file from an S3 bucket.
 
         parameters:
         - bucket (str): The name of the S3 bucket.
@@ -92,7 +96,7 @@ class S3Service:
             raise
 
     def list_files(self, *, bucket: str, prefix: str, page_size=1000) -> list[str]:
-        """Lists files in an S3 bucket.
+        """lists files in an S3 bucket.
 
         parameters:
         - bucket (str): The name of the S3 bucket.
@@ -216,7 +220,7 @@ class S3Service:
             LOGGER.error(f"Failed to delete file s3://{bucket}/{key}")
             raise
 
-    def delete_objects(self, *, bucket: str, keys: List[Optional[Any]]):
+    def delete_objects(self, *, bucket: str, keys: list[Any | None]):
         """Deletes multiple objects from an S3 bucket.
 
         Parameters:
@@ -234,7 +238,7 @@ class S3Service:
 
         try:
             for idx in range(0, len(keys), 1000):
-                objects = [{"Key": key} for key in keys[idx : idx + 1000]]
+                objects = [{"Key": key} for key in keys[idx: idx + 1000]]
                 self.__s3.delete_objects(Bucket=bucket, Delete={"Objects": objects})  # type: ignore
             LOGGER.info(f"Deleted {len(keys)} objects from bucket {bucket}")
         except ClientError:
@@ -286,7 +290,7 @@ class S3Service:
         except ClientError as error:
             if error.response["Error"]["Code"] == "404":
                 LOGGER.error(
-                    f"Failed to copy objects s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}"
+                    f"Failed to copy objects s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}",
                 )
 
         except Exception as error:
@@ -316,13 +320,16 @@ class S3Service:
 
         try:
             self.copy(
-                source_bucket=source_bucket, source_key=source_key, target_bucket=target_bucket, target_key=target_key
+                source_bucket=source_bucket,
+                source_key=source_key,
+                target_bucket=target_bucket,
+                target_key=target_key,
             )
             self.delete_object(bucket=source_bucket, key=source_key)
             LOGGER.info(f"Object moved s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}")
         except ClientError:
             LOGGER.error(
-                f"Failed to move object s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}"
+                f"Failed to move object s3://{source_bucket}/{source_key} -> s3://{target_bucket}/{target_key}",
             )
             raise
 
@@ -383,6 +390,6 @@ class S3Service:
             )
         except ClientError:
             LOGGER.error(
-                "Failed to move objects s3://{source_bucket}/{source_prefix} -> s3://{target_bucket}/{target_prefix}"
+                "Failed to move objects s3://{source_bucket}/{source_prefix} -> s3://{target_bucket}/{target_prefix}",
             )
             raise

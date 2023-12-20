@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """Library to simplify working with SQS."""
-import os
 import json
+import os
+
+from aws_lambda_powertools import Logger
 from boto3 import client
 from botocore.exceptions import ClientError
-from aws_lambda_powertools import Logger
 
 LOGGER = Logger(sampling_rate=float(os.environ["LOG_SAMPLING_RATE"]))
 
