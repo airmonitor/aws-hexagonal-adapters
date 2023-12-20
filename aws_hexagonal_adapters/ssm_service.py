@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Wrapper around default AWS SDK for using Systems Manager Parameter Store."""
 import os
-from typing import Union
+from mypy_boto3_ssm.client import SSMClient
+from typing import Union, Literal
 from boto3 import client
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Logger
@@ -19,17 +20,30 @@ class SSMService:
         :param region_name: The AWS region name which contains SSM
             Parameter store keys.
         """
-        self.__ssm = client("ssm", region_name=region_name)
+        self.__ssm = self.create_client(region_name=region_name)
+
+    @staticmethod
+    def create_client(region_name: str) -> SSMClient:
+        """Create a new SSM client.
+
+        :return: A new SSM client
+        """
+        return client("ssm", region_name=region_name)
 
     def get_parameter(self, parameter: str, with_decryption: bool = True) -> Union[str, None]:
-        """Get a single value from the AWS SSM parameter store key.
+        """Deletes a parameter from AWS SSM Parameter Store.
 
-        :param parameter: The name of AWS SSM parameter store key
-        :param with_decryption: Default true to an encrypted parameter
-            store key via the AWS KMS key
-        :return: the parameter store key value or None if key can't be
-            gathered
+        Parameters:
+        - parameter_name (str): The name of the parameter to delete.
+
+        Use the SSM delete_parameter API to delete the specified parameter.
+
+        Log a message on success or failure.
+
+        Raises:
+        - ClientError: If the delete operation fails.
         """
+
         try:
             response = self.__ssm.get_parameter(Name=parameter, WithDecryption=with_decryption)
             LOGGER.info(f"Got param {parameter} from ssm")
@@ -41,24 +55,44 @@ class SSMService:
             raise
 
     def get_parameters(self, parameters: list, with_decryption: bool = True) -> list:
-        """Get multiple SSM parameter store keys.
+        """Gets multiple parameters from SSM Parameter Store.
 
-        :param parameters: List of SSM parameter store keys
-        :param with_decryption:
-        :return: List of the AWS SSM parameter store keys value
+        Parameters:
+        - parameters (list): A list of parameter names to get.
+        - with_decryption (bool): Whether to decrypt secure string parameters.
+            Default True.
+
+        Returns:
+        - list: A list containing the value of each parameter.
+
+        For each parameter name, call get_parameter() to retrieve the
+        value.
+        Returns the list of parameter values.
         """
+
         return [self.get_parameter(x, with_decryption) for x in parameters]
 
     def get_parameters_dict(self, parameters, with_decryption: bool = True) -> dict:
-        """Create dictionary with a key as the ssm parameter store name and
-        value as it's key.
+        """Gets multiple SSM parameters and returns them as a dictionary.
 
-        :param parameters:
-        :param with_decryption: Default true to encrypted ssm parameters
-            via kms key
-        :return: Return dictionary of multiple ssm parameter store
-            entries
+        Parameters:
+        - parameters (list): The list of parameter names to get.
+        - with_decryption (bool): Whether to decrypt secure string parameters.
+            Default True.
+
+        Returns:
+        - dict: A dictionary with the parameter names as keys and parameter
+            values as values.
+
+        Gets parameters in batches of 10 using get_parameters.
+
+        Constructs a dictionary from the returned parameters with the
+        parameter name as the key and value as the value.
+
+        Raises:
+        - ClientError: If there is an error calling SSM.
         """
+
         try:
             LOGGER.info(f"Getting params {parameters} from ssm")
             ssm_parameters = []
@@ -78,11 +112,18 @@ class SSMService:
             raise
 
     def delete_parameter(self, parameter_name: str):
-        """Delete parameter.
+        """Deletes a parameter from AWS SSM Parameter Store.
 
-        :param parameter_name:
-        :return:
+        Parameters:
+        - parameter_name (str): The name of the parameter to delete.
+
+        Raises:
+        - Exception: If an error occurs deleting the parameter.
+
+        Returns: None.
+        Delete the SSM parameter.
         """
+
         try:
             LOGGER.info(f"Deleting parameter for {parameter_name}")
             self.__ssm.delete_parameter(Name=parameter_name)
@@ -96,18 +137,25 @@ class SSMService:
         description: str,
         key_id: str,
         value: str,
-        parameter_type: str = "SecureString",
+        parameter_type: Literal["String", "SecureString", "StringList"] = "SecureString",
     ):
-        """Create encrypted parameter in SSM.
+        """Creates a new parameter in AWS SSM Parameter Store.
 
-        :param parameter_name: Parameter path
-        :param description:
-        :param key_id:
-        :param value:
-        :param parameter_type: String or SecureString, default
-            SecureString
-        :return:
+        Parameters:
+        - parameter_name (str): The name of the parameter to create.
+        - description (str): A description for the parameter.
+        - key_id (str): The KMS key ID to use to encrypt the parameter value.
+        - value (str): The value to store in the parameter.
+        - parameter_type (Literal["String", "SecureString"], optional): The type of parameter to create.
+            defaults to "SecureString".
+
+        raises:
+        - Exception: If an error occurs, create the parameter.
+
+        returns: None.
+        create the SSM parameter.
         """
+
         try:
             LOGGER.info(f"Creating parameter for {parameter_name}")
             self.__ssm.put_parameter(
