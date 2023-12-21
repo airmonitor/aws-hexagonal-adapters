@@ -35,6 +35,10 @@ exclude = [
     "/pyproject.toml",
     "/requirements.txt",
     "/setup.cfg",
+    "/ruff.toml",
+    "/qodana.toml",
+    "/static-analysis.datadog.yml",
+    "/tests/*"
 ]
 [tool.hatch.build.targets.wheel]
 packages = ["aws_hexagonal_adapters"]
