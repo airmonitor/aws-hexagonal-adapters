@@ -2,9 +2,10 @@
 import os
 
 from typing import Literal
-from botocore.config import Config
+
 from aws_lambda_powertools import Logger
 from boto3 import client
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from mypy_boto3_ssm.client import SSMClient
 
@@ -25,7 +26,7 @@ class SSMService:
         self.__ssm = self.create_client(region_name=region_name, config=config)
 
     @staticmethod
-    def create_client(region_name: str, config:Config) -> SSMClient:
+    def create_client(region_name: str, config: Config) -> SSMClient:
         """Create a new SSM client.
 
         :return: A new SSM client
