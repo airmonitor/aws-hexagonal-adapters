@@ -5,7 +5,7 @@ on:
     branches:
       - main
 jobs:
-  synth:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +20,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
@@ -39,3 +39,12 @@ jobs:
         cd tests
         source .venv/bin/activate
         pytest -vvv test_s3_service.py
+
+    - name: Run SSM tests
+      env:
+        LOG_SAMPLING_RATE: 1
+        LOG_LEVEL: DEBUG
+      run: |
+        cd tests
+        source .venv/bin/activate
+        pytest -vvv test_ssm_service.py
