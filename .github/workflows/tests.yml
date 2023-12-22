@@ -66,3 +66,12 @@ jobs:
         cd tests
         source .venv/bin/activate
         pytest -vvv test_dynamo_db_service.py
+
+    - name: Run SQS tests
+      env:
+        LOG_SAMPLING_RATE: 1
+        LOG_LEVEL: DEBUG
+      run: |
+        cd tests
+        source .venv/bin/activate
+        pytest -vvv test_sqs_service.py
