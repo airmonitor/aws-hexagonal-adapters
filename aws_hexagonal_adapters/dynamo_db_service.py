@@ -87,7 +87,7 @@ class DynamoDBService:
             endpoint_url=f"https://dynamodb.{region_name}.amazonaws.com/",
         )
 
-    def scan_items(self, table_name: str, index_name: str | None = None):
+    def scan_items(self, table_name: str, index_name: str | None = None) -> list:
         """Scans items from a DynamoDB table.
 
         Parameters:
@@ -120,10 +120,10 @@ class DynamoDBService:
                 if status_code == 200:
                     return page["Items"]
         except ClientError as error:
-            LOGGER.error("Failed to put item into %s table due to %s", table_name, repr(error))
+            LOGGER.error(f"Failed to scan table {table_name} table due to {repr(error)}")
             raise
 
-    def put_item(self, table_name, item):
+    def put_item(self, table_name: str, item: dict) -> dict:
         """Puts an item into a DynamoDB table.
 
         Parameters:
@@ -153,7 +153,7 @@ class DynamoDBService:
             LOGGER.error(f"Failed to put item into {table_name} table due to {error}")
             raise
 
-    def batch_put_items(self, table_name, items):
+    def batch_put_items(self, table_name: str, items) -> None:
         """Batch puts multiple items into a DynamoDB table.
 
         Parameters:
@@ -181,7 +181,7 @@ class DynamoDBService:
             LOGGER.error(f"Failed to batch put for {table_name} table due to {error}")
             raise
 
-    def delete_item(self, table_name, item):
+    def delete_item(self, table_name, item: dict) -> dict:
         """Deletes an item from a DynamoDB table.
 
         Parameters:
@@ -211,7 +211,7 @@ class DynamoDBService:
             LOGGER.error(f"Failed to delete item from {table_name} table due to {error}")
             raise
 
-    def get_item(self, table_name, key):
+    def get_item(self, table_name, key: dict) -> dict:
         """Gets an item from a DynamoDB table.
 
         Parameters:
@@ -296,9 +296,9 @@ class DynamoDBService:
                 ExpressionAttributeValues=values,
                 ConditionExpression=condition,
             )
-            LOGGER.info("Updated item in %s table", table_name)
+            LOGGER.info(f"Updated item in {table_name} table")
         except ClientError as error:
-            LOGGER.error("Failed to update item in %s table due to %s", table_name, repr(error))
+            LOGGER.error(f"Failed to update item in {table_name} table due to {repr(error)}")
             raise
 
     def get_items(self, table_name, filter_expression=None):
@@ -343,7 +343,7 @@ class DynamoDBService:
             LOGGER.error(f"Failed to scan items from {table_name} table due to {error}")
             raise
 
-    def get_items_page(self, table_name, filter_expression, last_evaluated_key=None, limit=500):
+    def get_items_page(self, table_name, filter_expression, last_evaluated_key=None, limit=500) -> dict:
         """Gets a page of items from a DynamoDB table.
 
         Parameters:
@@ -366,6 +366,27 @@ class DynamoDBService:
 
         Returns:
         - dict: The scan response dict.
+        Example below:
+        {
+            "Count": 1,
+            "Items": [
+                {
+                    "id": "1"
+                }
+            ],
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "date": "Fri, 22 Dec 2023 11:36:47 GMT",
+                    "server": "amazon.com",
+                    "x-amz-crc32": "2265552731",
+                    "x-amzn-requestid": "PSIzQd5QRblPIUG5joY8s37l1U45VyAdlp8Be9PNWDHFlMfKadVN"
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "PSIzQd5QRblPIUG5joY8s37l1U45VyAdlp8Be9PNWDHFlMfKadVN",
+                "RetryAttempts": 0
+            },
+            "ScannedCount": 2
+        }
         """
 
         table = self.__resource.Table(table_name)
@@ -384,7 +405,7 @@ class DynamoDBService:
             LOGGER.error(f"Failed to scan items from {table_name} table due to {error}")
             raise
 
-    def query(self, table_name, **kwargs):
+    def query(self, table_name, **kwargs) -> list:
         """Queries items from a DynamoDB table.
 
         Parameters:

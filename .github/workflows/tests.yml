@@ -57,3 +57,12 @@ jobs:
         cd tests
         source .venv/bin/activate
         pytest -vvv test_event_bridge_service.py
+
+    - name: Run DynamoDB tests
+      env:
+        LOG_SAMPLING_RATE: 1
+        LOG_LEVEL: DEBUG
+      run: |
+        cd tests
+        source .venv/bin/activate
+        pytest -vvv test_event_bridge_service.py
