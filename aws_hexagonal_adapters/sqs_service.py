@@ -50,7 +50,7 @@ class SQSService:
         """
         return client("sqs", region_name=region_name, config=config)
 
-    def send_message_to_fifo(self, message, queue_url):
+    def send_message_to_fifo(self, message: dict, queue_url: str):
         """Sends a message to a FIFO SQS queue.
 
         Parameters:
@@ -80,7 +80,7 @@ class SQSService:
             LOGGER.error(f"Failed to send message to queue {queue_url}")
             raise
 
-    def send_message(self, message, queue_url):
+    def send_message(self, message: dict, queue_url: str):
         """Sends a message to an SQS queue.
 
         Parameters:
@@ -109,7 +109,7 @@ class SQSService:
             raise
 
     @staticmethod
-    def _retry_failed_messages(queue_url, response, messages, retry, retry_function):
+    def _retry_failed_messages(queue_url: str, response, messages, retry, retry_function):
         """Retries failed messages from a batch SQS send.
 
         Parameters:
@@ -138,7 +138,7 @@ class SQSService:
             LOGGER.error(f"Failed to process message batch {queue_url} due to {json.dumps(failed)}")
             raise BatchProcessingFailedException()
 
-    def send_messages(self, messages, queue_url, retry=3):
+    def send_messages(self, messages: list[dict], queue_url: str, retry=3):
         """Sends a batch of messages to an SQS queue.
 
         parameters:
@@ -169,7 +169,7 @@ class SQSService:
             LOGGER.error(f"Failed to send message batch to queue {queue_url}")
             raise
 
-    def receive_messages(self, queue_url, **kwargs):
+    def receive_messages(self, queue_url: str, **kwargs):
         """Receives messages from an SQS queue.
 
         parameters:
@@ -250,7 +250,7 @@ class SQSService:
             LOGGER.error(f"Failed to receive messages from queue {queue_url}")
             raise
 
-    def delete_message(self, queue_url, receipt_handle):
+    def delete_message(self, queue_url: str, receipt_handle: str):
         """Deletes a message from an SQS queue.
 
         Parameters:
@@ -270,7 +270,7 @@ class SQSService:
             LOGGER.error(f"Failed to delete message from queue {queue_url}")
             raise
 
-    def delete_messages(self, queue_url, messages, retry=3):
+    def delete_messages(self, queue_url: str, messages, retry=3):
         """Deletes a batch of messages from an SQS queue.
 
         parameters:
@@ -302,7 +302,7 @@ class SQSService:
             LOGGER.error(f"Failed to delete messages from queue {queue_url}")
             raise
 
-    def get_queue_attr(self, queue_url, attribute_names):
+    def get_queue_attr(self, queue_url: str, attribute_names: list):
         """Get queue attributes.
 
         Parameters:
