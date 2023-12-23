@@ -11,19 +11,39 @@ constants = {"table_name": "test-table", "table_items": [{"id": "1"}, {"id": "2"
 
 @pytest.fixture(scope="module")
 def dynamodb_client():
+    """Fixture to create a mock boto3 DynamoDB client for testing.
+
+    uses the moto mock_dynamodb context manager to mock DynamoDB.
+
+    yields a boto3 DynamoDB client initialized with:
+
+    - region_name: "us-east-1"
+
+    the mocked client is available to test cases needing a DynamoDB client.
+    """
     with mock_dynamodb():
         yield boto3.client("dynamodb", region_name="us-east-1")
 
 
 @pytest.fixture(scope="module")
 def dynamodb_resource():
+    """Fixture to create a mock boto3 DynamoDB resource for testing.
+
+    uses the moto mock_dynamodb context manager to mock DynamoDB.
+
+    yields a boto3 DynamoDB resource initialized with:
+
+    - region_name: "us-east-1"
+
+    the mocked resource is available to test cases needing a DynamoDB resource.
+    """
     with mock_dynamodb():
         yield boto3.resource("dynamodb", region_name="us-east-1")
 
 
 @pytest.fixture(scope="module")
 def dynamodb_table(dynamodb_resource):
-    """Create a mock of a dynamodb table."""
+    """Create mock of a dynamodb table."""
     table_name: str = constants.get("table_name")
     table = dynamodb_resource.create_table(
         TableName=table_name,
@@ -36,11 +56,35 @@ def dynamodb_table(dynamodb_resource):
 
 @pytest.fixture(scope="module")
 def dynamodb_service_client(dynamodb_client):
+    """Fixture to create a DynamoDBService client for testing.
+
+    parameters:
+      dynamodb_client: Fixture that provides a mock boto3 DynamoDB client.
+
+    create an instance of DynamoDBService initialized with:
+
+    - region_name: "us-east-1"
+
+    yields the DynamoDBService instance to test cases needing a service client.
+    """
+
     yield DynamoDBService(region_name="us-east-1")
 
 
 @pytest.fixture(scope="module")
 def dynamodb_service_resource(dynamodb_resource):
+    """Fixture to create a DynamoDBService resource for testing.
+
+    parameters:
+      dynamodb_resource: Fixture that provides a mock boto3 DynamoDB resource.
+
+    create an instance of DynamoDBService initialized with:
+
+    - region_name: "us-east-1"
+
+    yields the DynamoDBService instance to test cases needing a service resource.
+    """
+
     yield DynamoDBService(region_name="us-east-1")
 
 

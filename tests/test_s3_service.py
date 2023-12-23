@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-import os
+from pathlib import Path
 
 import boto3
 import pytest
-from moto import mock_s3
+
 from botocore.exceptions import ClientError
+from moto import mock_s3
 
 from aws_hexagonal_adapters.s3_service import S3Service
 
@@ -53,16 +53,17 @@ def test_upload(s3_client, s3_bucket, s3_service):
 def test_download(s3_client, s3_bucket, s3_service):
     """Test downloading a file from S3."""
     local_path = constants.get("local_path")
-    download_local_path = constants.get("download_local_path")
+    download_local_path = Path(constants.get("download_local_path"))
     remote_path = constants.get("remote_path")
     extra_args = constants.get("extra_args")
     s3_service.upload(bucket=s3_bucket, local_path=local_path, remote_path=remote_path, extra_args=extra_args)
 
     s3_service.download(bucket=s3_bucket, remote_path=remote_path, local_path=download_local_path)
 
-    with open(local_path) as f:
+    file_path = Path(local_path)
+    with file_path.open() as f:
         assert f.read() == constants.get("content")
-    os.remove(download_local_path)
+    download_local_path.unlink()
 
 
 def test_list_files(s3_client, s3_bucket, s3_service):
