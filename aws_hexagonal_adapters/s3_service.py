@@ -30,8 +30,7 @@ class S3Service:
 
     @staticmethod
     def create_client(region_name: str, config: Config) -> S3Client:
-        """
-        Creates an S3 client.
+        """Creates an S3 client.
 
         Parameters:
         - region_name (str): The AWS region name for the client.
@@ -74,7 +73,7 @@ class S3Service:
             raise
 
     def download(self, *, bucket: str, local_path: str, remote_path: str) -> None:
-        """downloads a file from an S3 bucket.
+        """Downloads a file from an S3 bucket.
 
         parameters:
         - bucket (str): The name of the S3 bucket.
@@ -96,7 +95,7 @@ class S3Service:
             raise
 
     def list_files(self, *, bucket: str, prefix: str, page_size=1000) -> list[str]:
-        """lists files in an S3 bucket.
+        """Lists files in an S3 bucket.
 
         parameters:
         - bucket (str): The name of the S3 bucket.
@@ -238,7 +237,7 @@ class S3Service:
 
         try:
             for idx in range(0, len(keys), 1000):
-                objects = [{"Key": key} for key in keys[idx: idx + 1000]]
+                objects = [{"Key": key} for key in keys[idx : idx + 1000]]
                 self.__s3.delete_objects(Bucket=bucket, Delete={"Objects": objects})  # type: ignore
             LOGGER.info(f"Deleted {len(keys)} objects from bucket {bucket}")
         except ClientError:
