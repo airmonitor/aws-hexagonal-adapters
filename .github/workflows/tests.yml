@@ -75,3 +75,12 @@ jobs:
         cd tests
         source .venv/bin/activate
         pytest -vvv test_sqs_service.py
+
+    - name: Run CloudWatch tests
+      env:
+        LOG_SAMPLING_RATE: 1
+        LOG_LEVEL: DEBUG
+      run: |
+        cd tests
+        source .venv/bin/activate
+        pytest -vvv test_cloudwatch_service.py
