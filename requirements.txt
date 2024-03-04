@@ -1,4 +1,4 @@
-aws_lambda_powertools==2.34.1
+aws_lambda_powertools==2.34.2
 boto3==1.34.54
 botocore==1.34.49
 mypy-boto3-cloudwatch>=1.34
