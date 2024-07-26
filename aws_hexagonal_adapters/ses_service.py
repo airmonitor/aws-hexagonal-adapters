@@ -151,8 +151,8 @@ class SESService:
         if attachment_list:
             for attachment in attachment_list:
                 attachment_name = attachment.split("/")[-1]
-                _attachment = Path(attachment)
-                with _attachment.open("rb") as file:
+                file_path = Path(attachment)
+                with file_path.open("rb") as file:
                     part = MIMEApplication(file.read())  # type: ignore
                 part.add_header("Content-Disposition", "attachment", filename=attachment_name)
                 message.attach(part)
@@ -161,8 +161,8 @@ class SESService:
         if picture_list:
             for picture in picture_list:
                 picture_name = picture.split("/")[-1]
-                _picture_name = Path(picture_name)
-                with _picture_name.open("rb") as file:
+                file_path = Path(picture)
+                with file_path.open("rb") as file:
                     part = MIMEImage(file.read(), name=picture_name)  # type: ignore
                 message.attach(part)
 
