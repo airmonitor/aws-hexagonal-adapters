@@ -8,8 +8,9 @@ from setuptools import setup
 
 setup(
     name="aws-hexagonal-adapters",
-    version="1.4.0",
+    version="1.4.1",
     description="Adapters following hexagonal architecture to connect various AWS services.",
+    long_description="The idea behind this project is to create secured constructs from the start. \n",
     license="MIT",
     exclude=[
         ".github",
