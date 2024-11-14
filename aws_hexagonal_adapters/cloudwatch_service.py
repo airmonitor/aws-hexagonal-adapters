@@ -1,4 +1,5 @@
 """Abstraction layer on top of AWS Cloud Watch."""
+
 import os
 
 from aws_lambda_powertools import Logger

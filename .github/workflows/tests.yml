@@ -5,7 +5,7 @@ on:
     branches:
       - main
 jobs:
-  tests:
+  synth:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,67 +20,24 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: "3.11"
 
     - name: Install dependencies
       run: |
-        cd tests
-        python -m venv .venv
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        npm install -g aws-cdk
+        cd test
+        make venv
         source .venv/bin/activate
-        pip install -r ../requirements.txt
-        pip install pytest moto
+        make install
 
-
-    - name: Run S3 tests
+    - name: Invoke CDK synth
       env:
-        LOG_SAMPLING_RATE: 1
-        LOG_LEVEL: DEBUG
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        CDK_DEFAULT_ACCOUNT: ${{ secrets.CDK_DEFAULT_ACCOUNT }}
+        CDK_DEFAULT_REGION: ${{ secrets.CDK_DEFAULT_REGION }}
       run: |
-        cd tests
+        cd test
         source .venv/bin/activate
-        pytest -vvv test_s3_service.py
-
-    - name: Run SSM tests
-      env:
-        LOG_SAMPLING_RATE: 1
-        LOG_LEVEL: DEBUG
-      run: |
-        cd tests
-        source .venv/bin/activate
-        pytest -vvv test_ssm_service.py
-
-    - name: Run EventBridge tests
-      env:
-        LOG_SAMPLING_RATE: 1
-        LOG_LEVEL: DEBUG
-      run: |
-        cd tests
-        source .venv/bin/activate
-        pytest -vvv test_event_bridge_service.py
-
-    - name: Run DynamoDB tests
-      env:
-        LOG_SAMPLING_RATE: 1
-        LOG_LEVEL: DEBUG
-      run: |
-        cd tests
-        source .venv/bin/activate
-        pytest -vvv test_dynamo_db_service.py
-
-    - name: Run SQS tests
-      env:
-        LOG_SAMPLING_RATE: 1
-        LOG_LEVEL: DEBUG
-      run: |
-        cd tests
-        source .venv/bin/activate
-        pytest -vvv test_sqs_service.py
-
-    - name: Run CloudWatch tests
-      env:
-        LOG_SAMPLING_RATE: 1
-        LOG_LEVEL: DEBUG
-      run: |
-        cd tests
-        source .venv/bin/activate
-        pytest -vvv test_cloudwatch_service.py
+        cdk synth

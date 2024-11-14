@@ -1,4 +1,5 @@
 """Wrapper around default AWS SDK for using Systems Manager Parameter Store."""
+
 import os
 
 from typing import Literal

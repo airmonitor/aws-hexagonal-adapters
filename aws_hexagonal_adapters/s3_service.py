@@ -1,4 +1,5 @@
 """Library to simplify working with S3."""
+
 import os
 
 from typing import Any
@@ -261,7 +262,7 @@ class S3Service:
 
         LOGGER.info(f"Deleting prefix {prefix} from bucket {bucket}")
         keys = self.list_files(bucket=bucket, prefix=prefix)
-        self.delete_objects(bucket=bucket, keys=keys)
+        self.delete_objects(bucket=bucket, keys=keys)  # type: ignore
         LOGGER.info(f"Deleted prefix {prefix} from bucket {bucket}")
 
     def copy(self, *, source_bucket: str, source_key: str, target_bucket: str, target_key: str):

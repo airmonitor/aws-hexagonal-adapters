@@ -1,5 +1,6 @@
 """Simplify operations against AWS Simple Email Service using AWS Python SDK
 boto3."""
+
 import os
 
 from pathlib import Path
