@@ -1,4 +1,5 @@
 """Abstraction layer on top of AWS Event Bridge."""
+
 import os
 
 from aws_lambda_powertools import Logger
@@ -67,5 +68,5 @@ class EventsService:
 
             self.__client.put_events(Entries=[item])
         except ClientError as error:
-            LOGGER.error(f"Failed to put event: {repr(error)} into EventBridge: {self.event_bus_name}")
+            LOGGER.error(f"Failed to put event: {error!r} into EventBridge: {self.event_bus_name}")
             raise

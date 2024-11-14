@@ -1,4 +1,5 @@
 """Abstraction layer on top of AWS Event Bridge."""
+
 import os
 
 from collections.abc import Mapping, Sequence
@@ -120,8 +121,9 @@ class DynamoDBService:
                 if status_code == 200:
                     return page["Items"]
         except ClientError as error:
-            LOGGER.error(f"Failed to scan table {table_name} table due to {repr(error)}")
+            LOGGER.error(f"Failed to scan table {table_name} table due to {error!r}")
             raise
+        return []
 
     def put_item(self, table_name: str, item: dict) -> dict:
         """Puts an item into a DynamoDB table.
@@ -298,7 +300,7 @@ class DynamoDBService:
             )
             LOGGER.info(f"Updated item in {table_name} table")
         except ClientError as error:
-            LOGGER.error(f"Failed to update item in {table_name} table due to {repr(error)}")
+            LOGGER.error(f"Failed to update item in {table_name} table due to {error!r}")
             raise
 
     def get_items(self, table_name, filter_expression=None):
@@ -326,10 +328,7 @@ class DynamoDBService:
         table = self.__resource.Table(table_name)
 
         try:
-            if filter_expression:
-                response = table.scan(FilterExpression=filter_expression)
-            else:
-                response = table.scan()
+            response = table.scan(FilterExpression=filter_expression) if filter_expression else table.scan()
             data = response["Items"]
             while "LastEvaluatedKey" in response:
                 response = table.scan(
@@ -439,5 +438,5 @@ class DynamoDBService:
             LOGGER.info(f"Got {len(data)} items from {table_name} table")
             return data
         except ClientError as error:
-            LOGGER.error(f"Failed to query items from {table_name} table due to {repr(error)}")
+            LOGGER.error(f"Failed to query items from {table_name} table due to {error!r}")
             raise

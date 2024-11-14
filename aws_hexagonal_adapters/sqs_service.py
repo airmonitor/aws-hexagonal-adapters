@@ -1,4 +1,5 @@
 """Library to simplify working with SQS."""
+
 import json
 import os
 
